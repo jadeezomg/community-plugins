@@ -742,6 +742,6 @@ added_at = 1785274231
 author = "noctalia"
 license = "MIT"
 icon = "network"
-description = "Monitor your tailnet, browse peers, copy IPs, SSH, and toggle Tailscale from the bar or control center."
+description = "Monitor your tailnet, peers, copy IPs, SSH, and toggle Tailscale from the bar or control center."
 plugin_api = 16
 tags = ["network", "utility", "system"]
