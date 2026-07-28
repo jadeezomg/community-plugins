@@ -1,0 +1,117 @@
+# Tailscale tailnet manager. A headless [[service]] polls `tailscale status --json`;
+# the bar [[widget]] shows connection state and opens the [[panel]]; right-click toggles
+# connect/disconnect.
+
+id = "jadeezomg/tailscale"
+name = "Tailscale"
+version = "1.3.2"
+plugin_api = 16
+author = "noctalia"
+license = "MIT"
+dependencies = ["tailscale"]
+tags = ["network", "utility", "system"]
+icon = "network"
+description = "Monitor your tailnet, browse peers, copy IPs, SSH, and toggle Tailscale from the bar or control center."
+
+[[setting]]
+key = "refresh_interval"
+type = "int"
+label_key = "settings.refresh_interval.label"
+description_key = "settings.refresh_interval.description"
+default = 5
+min = 1
+max = 60
+
+[[setting]]
+key = "hide_disconnected"
+type = "bool"
+label_key = "settings.hide_disconnected.label"
+description_key = "settings.hide_disconnected.description"
+default = false
+
+[[setting]]
+key = "close_on_action"
+type = "bool"
+label_key = "settings.close_on_action.label"
+description_key = "settings.close_on_action.description"
+default = true
+
+[[setting]]
+key = "ssh_user"
+type = "string"
+label_key = "settings.ssh_user.label"
+description_key = "settings.ssh_user.description"
+default = ""
+
+[[setting]]
+key = "ping_count"
+type = "int"
+label_key = "settings.ping_count.label"
+description_key = "settings.ping_count.description"
+default = 5
+min = 1
+max = 20
+
+[[setting]]
+key = "command"
+type = "string"
+label_key = "settings.command.label"
+description_key = "settings.command.description"
+default = ""
+advanced = true
+
+[[service]]
+id = "service"
+entry = "service.luau"
+
+[[widget]]
+id = "tailscale"
+entry = "widget.luau"
+
+  [[widget.setting]]
+  key = "show_glyph"
+  type = "bool"
+  label_key = "widget_settings.show_glyph.label"
+  description_key = "widget_settings.show_glyph.description"
+  default = true
+
+  [[widget.setting]]
+  key = "show_ip"
+  type = "bool"
+  label_key = "widget_settings.show_ip.label"
+  description_key = "widget_settings.show_ip.description"
+  default = true
+
+  [[widget.setting]]
+  key = "show_traffic"
+  type = "bool"
+  label_key = "widget_settings.show_traffic.label"
+  description_key = "widget_settings.show_traffic.description"
+  default = false
+
+  [[widget.setting]]
+  key = "glyph_connected"
+  type = "glyph"
+  label_key = "widget_settings.glyph_connected.label"
+  description_key = "widget_settings.glyph_connected.description"
+  default = "network"
+
+  [[widget.setting]]
+  key = "glyph_disconnected"
+  type = "glyph"
+  label_key = "widget_settings.glyph_disconnected.label"
+  description_key = "widget_settings.glyph_disconnected.description"
+  default = "network-off"
+
+[[shortcut]]
+id = "toggle"
+entry = "shortcut.luau"
+
+[[panel]]
+id = "panel"
+entry = "panel.luau"
+width = 400
+height = 720
+placement = "attached"
+position = "auto"
+open_near_click = true

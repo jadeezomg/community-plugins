@@ -731,3 +731,17 @@ icon = "battery-eco"
 description = "Set the battery threshold for laptop batteries to extend battery lifespan"
 plugin_api = 3
 tags = ["hardware", "system", "utility", "bar", "panel"]
+
+
+[[plugin]]
+id = "jadeezomg/tailscale"
+name = "Tailscale"
+version = "1.0.0"
+updated_at = 1785274231
+added_at = 1785274231
+author = "noctalia"
+license = "MIT"
+icon = "network"
+description = "Monitor your tailnet, browse peers, copy IPs, SSH, and toggle Tailscale from the bar or control center."
+plugin_api = 16
+tags = ["network", "utility", "system"]
