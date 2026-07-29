@@ -21,6 +21,10 @@ To connect and disconnect from the plugin, grant your user prefs access once wit
 `sudo tailscale set --operator=$USER` — without it `tailscale up` / `down` are
 root-only and the toggle fails.
 
+The peer actions shell out to three more commands, each only when you use it:
+`ssh` and `ping` run in a terminal, and `xdg-open` opens the admin console in your
+browser. Everything else works without them.
+
 Interface traffic rates need plugin API 16 (`noctalia.systemStats()`). Enable
 **Settings → Services → System monitor**, then turn on **Show Traffic** in the
 widget settings; the first `tailscale*` interface is used. On vertical bars, rates

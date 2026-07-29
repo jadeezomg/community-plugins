@@ -4,11 +4,11 @@
 
 id = "jadeezomg/tailscale"
 name = "Tailscale"
-version = "1.1.0"
+version = "1.0.0"
 plugin_api = 16
-author = "noctalia"
+author = "jadeezomg"
 license = "MIT"
-dependencies = ["tailscale"]
+dependencies = ["ping", "ssh", "tailscale", "xdg-open"]
 tags = ["network", "utility", "system"]
 icon = "network"
 description = "Monitor your tailnet, browse peers, copy IPs, SSH, and toggle Tailscale from the bar or control center."
