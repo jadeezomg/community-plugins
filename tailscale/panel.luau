@@ -102,31 +102,26 @@ local function identityCard()
   if not running or ip == "" then
     return nil
   end
-  return ui.box({
-    fill = "surface_container_high",
-    radius = 8,
-    padding = 12,
-  }, {
-    ui.row({ gap = 10, align = "center" }, {
-      ui.glyph({ name = "world", color = "primary" }),
-      ui.column({ gap = 2, flexGrow = 1 }, {
-        ui.label({
-          text = if hostname ~= "" then hostname else noctalia.tr("panel.unknown_host"),
-          fontSize = 12,
-          color = "on_surface_variant",
-        }),
-        ui.label({
-          text = ip,
-          fontFamily = "monospace",
-          fontSize = 14,
-          color = "on_surface",
-        }),
+  -- ui.box is a leaf: it drops children and ignores padding. Cards are a padded row.
+  return ui.row({ gap = 10, align = "center", padding = 12, radius = 8, fill = "surface_variant/0.45" }, {
+    ui.glyph({ name = "world", color = "primary" }),
+    ui.column({ gap = 2, flexGrow = 1 }, {
+      ui.label({
+        text = if hostname ~= "" then hostname else noctalia.tr("panel.unknown_host"),
+        fontSize = 12,
+        color = "on_surface_variant",
       }),
-      ui.button({
-        glyph = "copy",
-        variant = "ghost",
-        onClick = "onCopySelfIp",
+      ui.label({
+        text = ip,
+        fontFamily = "monospace",
+        fontSize = 14,
+        color = "on_surface",
       }),
+    }),
+    ui.button({
+      glyph = "copy",
+      variant = "ghost",
+      onClick = "onCopySelfIp",
     }),
   })
 end
@@ -137,19 +132,19 @@ local function exitNodeCard()
   end
   local statusText = if exitNode.online then noctalia.tr("panel.status_connected") else noctalia.tr("panel.status_disconnected")
   local detail = if exitNode.ip ~= "" then `{exitNode.ip} · {statusText}` else statusText
-  return ui.box({
-    fill = "primary/0.1",
-    radius = 8,
+  return ui.row({
+    gap = 10,
+    align = "center",
     padding = 12,
+    radius = 8,
+    fill = "primary/0.1",
     border = "primary/0.3",
     borderWidth = 1,
   }, {
-    ui.row({ gap = 10, align = "center" }, {
-      ui.glyph({ name = "route", color = if exitNode.online then "primary" else "on_surface_variant" }),
-      ui.column({ gap = 2, flexGrow = 1 }, {
-        ui.label({ text = noctalia.tr("panel.exit_node"), fontWeight = "medium", color = "primary" }),
-        ui.label({ text = detail, fontSize = 12, fontFamily = "monospace", color = "on_surface_variant" }),
-      }),
+    ui.glyph({ name = "route", color = if exitNode.online then "primary" else "on_surface_variant" }),
+    ui.column({ gap = 2, flexGrow = 1 }, {
+      ui.label({ text = noctalia.tr("panel.exit_node"), fontWeight = "medium", color = "primary" }),
+      ui.label({ text = detail, fontSize = 12, fontFamily = "monospace", color = "on_surface_variant" }),
     }),
   })
 end
@@ -164,7 +159,7 @@ local function peerRow(peer, index)
     gap = 8,
     align = "center",
     padding = 8,
-    fill = "surface_container_high",
+    fill = "surface_variant/0.45",
     radius = 8,
   }, {
     ui.label({ text = if online then "●" else "○", color = stateColor, fontSize = 12 }),
@@ -215,21 +210,9 @@ local function peerRow(peer, index)
 end
 
 local function peerListRows()
-  if needsLogin then
-    return {
-      ui.label({
-        text = noctalia.tr("panel.needs_login"),
-        color = "on_surface_variant",
-      }),
-    }
-  end
-  if not running then
-    return {
-      ui.label({
-        text = noctalia.tr("panel.not_connected"),
-        color = "on_surface_variant",
-      }),
-    }
+  if needsLogin or not running then
+    local key = if needsLogin then "panel.needs_login" else "panel.not_connected"
+    return { ui.label({ text = noctalia.tr(key), color = "on_surface_variant" }) }
   end
 
   local rows = sortedPeers()
@@ -300,8 +283,6 @@ local function render()
     variant = "secondary",
     onClick = "onAdminConsole",
   }))
-  -- Inert while unauthenticated: `tailscale up` needs a prefs write, so signing in
-  -- happens in a terminal. peerListRows() says so in place of the peer list.
   table.insert(body, ui.button({
     text = if running then noctalia.tr("panel.disconnect") else noctalia.tr("panel.connect"),
     glyph = if running then "link-off" else "link",

@@ -89,10 +89,10 @@
 	},
 	"title": "Tailscale",
 	"shortcut": {
-		"connected": "Tailscale connected",
-		"disconnected": "Tailscale disconnected",
-		"needs_login": "Tailscale not authenticated",
-		"not_installed": "Tailscale unavailable",
+		"connected": "TS up",
+		"disconnected": "TS down",
+		"needs_login": "TS no auth",
+		"not_installed": "TS unavailable",
 		"probing": "Detecting Tailscale…"
 	},
 	"tooltip": {

@@ -106,13 +106,7 @@ local function clearStatus(message)
   peersById = {}
   status.exitNode = nil
   setStatus({
-    running = false,
-    needsLogin = false,
-    ip = "",
-    hostname = "",
-    peerCount = 0,
-    peers = {},
-    error = message,
+    running = false, needsLogin = false, ip = "", hostname = "", peerCount = 0, peers = {}, error = message,
   })
 end
 
@@ -139,10 +133,9 @@ local function parseStatusJson(stdout)
     return nil, noctalia.tr("errors.parse-failed")
   end
 
-  local backendState = if type(decoded.BackendState) == "string" then decoded.BackendState else ""
   local authUrl = if type(decoded.AuthURL) == "string" then noctalia.string.trim(decoded.AuthURL) else ""
-  local running = backendState == "Running"
-  local needsLogin = not running and (backendState == "NeedsLogin" or authUrl ~= "")
+  local running = decoded.BackendState == "Running"
+  local needsLogin = not running and (decoded.BackendState == "NeedsLogin" or authUrl ~= "")
   local ip = ""
   local hostname = ""
   local peers = {}
@@ -297,16 +290,6 @@ local function executePeerAction(action, peerId)
   end
 end
 
--- `up`/`down` are prefs writes: without --operator they exit non-zero with an
--- access-denied message. Forward the fix instead of the generic failure.
-local function toggleErrorKey(stderr)
-  local lower = string.lower(if type(stderr) == "string" then stderr else "")
-  if string.find(lower, "access denied", 1, true) or string.find(lower, "requires root", 1, true) then
-    return "errors.needs-operator"
-  end
-  return "errors.toggle-failed"
-end
-
 -- Inert while unauthenticated: signing in is out of scope, so there is nothing to
 -- toggle until the user runs `tailscale up` in a terminal.
 local function toggleTailscale()
@@ -321,7 +304,8 @@ local function toggleTailscale()
     if ok then
       noctalia.notify(noctalia.tr("title"), noctalia.tr(`notify.{if direction == "down" then "disconnected" else "connected"}`))
     elseif type(result) == "table" and not result.timedOut then
-      noctalia.notifyError(noctalia.tr("title"), noctalia.tr(toggleErrorKey(result.stderr)))
+      local denied = string.find(string.lower(result.stderr or ""), "access denied", 1, true)
+      noctalia.notifyError(noctalia.tr("title"), noctalia.tr(if denied then "errors.needs-operator" else "errors.toggle-failed"))
     end
     pollStatus()
   end, 30000)
