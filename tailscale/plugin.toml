@@ -4,7 +4,7 @@
 
 id = "jadeezomg/tailscale"
 name = "Tailscale"
-version = "1.0.0"
+version = "1.1.0"
 plugin_api = 16
 author = "noctalia"
 license = "MIT"
@@ -28,6 +28,17 @@ type = "bool"
 label_key = "settings.hide_disconnected.label"
 description_key = "settings.hide_disconnected.description"
 default = false
+
+[[setting]]
+key = "name_source"
+type = "select"
+label_key = "settings.name_source.label"
+description_key = "settings.name_source.description"
+default = "machine"
+options = [
+  { value = "machine", label_key = "settings.name_source.options.machine" },
+  { value = "hostname", label_key = "settings.name_source.options.hostname" },
+]
 
 [[setting]]
 key = "close_on_action"
@@ -111,7 +122,7 @@ entry = "shortcut.luau"
 id = "panel"
 entry = "panel.luau"
 width = 400
-height = 720
+height = 620
 placement = "attached"
 position = "auto"
 open_near_click = true

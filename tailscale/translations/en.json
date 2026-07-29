@@ -1,93 +1,106 @@
 {
-  "errors": {
-    "not-installed": "Tailscale CLI not found on PATH",
-    "no-terminal": "No terminal emulator found",
-    "parse-failed": "Could not parse tailscale status",
-    "peer-not-found": "Peer not found",
-    "peer-no-ip": "Peer has no Tailscale IP",
-    "toggle-failed": "Tailscale command failed"
-  },
-  "notify": {
-    "connected": "Tailscale connected",
-    "copied-hostname": "Hostname copied: {hostname}",
-    "copied-ip": "IP copied: {ip}",
-    "disconnected": "Tailscale disconnected"
-  },
-  "panel": {
-    "admin_console": "Admin Console",
-    "connect": "Connect",
-    "devices": "Devices",
-    "disconnect": "Disconnect",
-    "exit_node": "Exit Node Active",
-    "no_peers": "No peers found",
-    "not_connected": "Tailscale is not connected",
-    "not_installed": "Install the tailscale CLI to use this plugin",
-    "status_connected": "Connected",
-    "status_disconnected": "Disconnected",
-    "subtitle_peers": "{count} devices",
-    "title": "Tailscale",
-    "unknown_host": "Unknown"
-  },
-  "settings": {
-    "close_on_action": {
-      "description": "Close the panel after SSH, ping, or admin console actions",
-      "label": "Close on Action"
-    },
-    "hide_disconnected": {
-      "description": "Only show online peers in the panel",
-      "label": "Hide Disconnected Peers"
-    },
-    "ping_count": {
-      "description": "Number of ping packets to send",
-      "label": "Ping Count"
-    },
-    "refresh_interval": {
-      "description": "How often to refresh Tailscale status (seconds)",
-      "label": "Refresh Interval"
-    },
-    "ssh_user": {
-      "description": "Default SSH username; leave empty to pass the IP only",
-      "label": "SSH User"
-    },
-    "command": {
-      "description": "Full path to tailscale when auto-detection fails (common on NixOS: /run/current-system/sw/bin/tailscale)",
-      "label": "Tailscale Command"
-    }
-  },
-  "widget_settings": {
-    "glyph_connected": {
-      "description": "Glyph while Tailscale is connected",
-      "label": "Connected Glyph"
-    },
-    "glyph_disconnected": {
-      "description": "Glyph while disconnected, probing, or unavailable",
-      "label": "Disconnected Glyph"
-    },
-    "show_glyph": {
-      "description": "Show the state glyph in the bar",
-      "label": "Show Glyph"
-    },
-    "show_ip": {
-      "description": "Show your Tailscale IP beside the glyph on horizontal bars",
-      "label": "Show IP"
-    },
-    "show_traffic": {
-      "description": "Show Tailscale interface upload/download rates beside the glyph on horizontal bars",
-      "label": "Show Traffic"
-    }
-  },
-  "title": "Tailscale",
-  "shortcut": {
-    "connected": "Tailscale connected",
-    "disconnected": "Tailscale disconnected",
-    "not_installed": "Tailscale unavailable",
-    "probing": "Detecting Tailscale…"
-  },
-  "tooltip": {
-    "connected": "{hostname} · {count} devices",
-    "disconnected": "Tailscale disconnected",
-    "not_installed": "Tailscale not installed",
-    "probing": "Detecting Tailscale CLI…",
-    "traffic": "↓ {down} · ↑ {up}"
-  }
+	"errors": {
+		"needs-operator": "Connecting needs root. Run 'sudo tailscale set --operator=$USER' once to allow it.",
+		"not-installed": "Tailscale CLI not found on PATH",
+		"no-terminal": "No terminal emulator found",
+		"parse-failed": "Could not parse tailscale status",
+		"peer-not-found": "Peer not found",
+		"peer-no-ip": "Peer has no Tailscale IP",
+		"toggle-failed": "Tailscale command failed"
+	},
+	"notify": {
+		"connected": "Tailscale connected",
+		"copied-hostname": "Hostname copied: {hostname}",
+		"copied-ip": "IP copied: {ip}",
+		"disconnected": "Tailscale disconnected"
+	},
+	"panel": {
+		"admin_console": "Admin Console",
+		"connect": "Connect",
+		"devices": "Devices",
+		"disconnect": "Disconnect",
+		"exit_node": "Exit Node Active",
+		"needs_login": "Tailscale is not authenticated. Run 'sudo tailscale up' in a terminal to sign in; this panel updates on its own.",
+		"no_peers": "No peers found",
+		"not_connected": "Tailscale is not connected",
+		"not_installed": "Install the tailscale CLI to use this plugin",
+		"status_connected": "Connected",
+		"status_disconnected": "Disconnected",
+		"status_needs_login": "Not authenticated",
+		"subtitle_peers": "{count} devices",
+		"title": "Tailscale",
+		"unknown_host": "Unknown"
+	},
+	"settings": {
+		"close_on_action": {
+			"description": "Close the panel after SSH, ping, or admin console actions",
+			"label": "Close on Action"
+		},
+		"hide_disconnected": {
+			"description": "Only show online peers in the panel",
+			"label": "Hide Disconnected Peers"
+		},
+		"name_source": {
+			"description": "Which name to show for your device and each peer",
+			"label": "Device Name",
+			"options": {
+				"hostname": "OS hostname",
+				"machine": "Tailscale machine name"
+			}
+		},
+		"ping_count": {
+			"description": "Number of ping packets to send",
+			"label": "Ping Count"
+		},
+		"refresh_interval": {
+			"description": "How often to refresh Tailscale status (seconds)",
+			"label": "Refresh Interval"
+		},
+		"ssh_user": {
+			"description": "Default SSH username; leave empty to pass the IP only",
+			"label": "SSH User"
+		},
+		"command": {
+			"description": "Full path to tailscale when auto-detection fails (common on NixOS: /run/current-system/sw/bin/tailscale)",
+			"label": "Tailscale Command"
+		}
+	},
+	"widget_settings": {
+		"glyph_connected": {
+			"description": "Glyph while Tailscale is connected",
+			"label": "Connected Glyph"
+		},
+		"glyph_disconnected": {
+			"description": "Glyph while disconnected, probing, or unavailable",
+			"label": "Disconnected Glyph"
+		},
+		"show_glyph": {
+			"description": "Show the state glyph in the bar",
+			"label": "Show Glyph"
+		},
+		"show_ip": {
+			"description": "Show your Tailscale IP beside the glyph on horizontal bars",
+			"label": "Show IP"
+		},
+		"show_traffic": {
+			"description": "Show Tailscale interface upload/download rates beside the glyph on horizontal bars",
+			"label": "Show Traffic"
+		}
+	},
+	"title": "Tailscale",
+	"shortcut": {
+		"connected": "Tailscale connected",
+		"disconnected": "Tailscale disconnected",
+		"needs_login": "Tailscale not authenticated",
+		"not_installed": "Tailscale unavailable",
+		"probing": "Detecting Tailscale…"
+	},
+	"tooltip": {
+		"connected": "{hostname} · {count} devices",
+		"disconnected": "Tailscale disconnected",
+		"needs_login": "Tailscale is not authenticated - sign in from a terminal",
+		"not_installed": "Tailscale not installed",
+		"probing": "Detecting Tailscale CLI…",
+		"traffic": "↓ {down} · ↑ {up}"
+	}
 }

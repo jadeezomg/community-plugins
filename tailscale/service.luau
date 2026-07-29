@@ -21,6 +21,7 @@ local status = {
   probing = true,
   installed = false,
   running = false,
+  needsLogin = false,
   ip = "",
   hostname = "",
   peerCount = 0,
@@ -56,19 +57,34 @@ local function tailscaleIp(ips)
   return if type(ips[1]) == "string" then ips[1] else ""
 end
 
+-- Machine name is the first label of DNSName (what the admin console shows and
+-- MagicDNS resolves); HostName is the OS name, which drifts from the tailnet and
+-- arrives unsanitised. `name_source` picks; each falls back to the other.
+local function nodeName(dnsName, hostName)
+  local machine = string.match(if type(dnsName) == "string" then dnsName else "", "^[^.]+") or ""
+  local osName = if type(hostName) == "string" then noctalia.string.trim(hostName) else ""
+  if cfg("name_source") == "hostname" then
+    return if osName ~= "" then osName else machine
+  end
+  return if machine ~= "" then machine else osName
+end
+
 local function publishStatus()
   local parts = {
     tostring(status.probing),
     tostring(status.installed),
     tostring(status.running),
+    tostring(status.needsLogin),
     status.ip,
     status.hostname,
     tostring(status.peerCount),
     status.error,
     if type(status.exitNode) == "table" then `{status.exitNode.id}:{status.exitNode.online}` else "",
   }
+  -- Names belong in the key: flipping name_source changes nothing else, so a key
+  -- without them would match and suppress the republish.
   for _, peer in status.peers do
-    table.insert(parts, `{peer.id}:{peer.ip}:{peer.online}`)
+    table.insert(parts, `{peer.id}:{peer.ip}:{peer.online}:{peer.hostname}`)
   end
   local key = table.concat(parts, "|")
   if key == lastStatusKey then
@@ -89,7 +105,15 @@ end
 local function clearStatus(message)
   peersById = {}
   status.exitNode = nil
-  setStatus({ running = false, ip = "", hostname = "", peerCount = 0, peers = {}, error = message })
+  setStatus({
+    running = false,
+    needsLogin = false,
+    ip = "",
+    hostname = "",
+    peerCount = 0,
+    peers = {},
+    error = message,
+  })
 end
 
 local function shellQuote(s)
@@ -115,14 +139,17 @@ local function parseStatusJson(stdout)
     return nil, noctalia.tr("errors.parse-failed")
   end
 
-  local running = decoded.BackendState == "Running"
+  local backendState = if type(decoded.BackendState) == "string" then decoded.BackendState else ""
+  local authUrl = if type(decoded.AuthURL) == "string" then noctalia.string.trim(decoded.AuthURL) else ""
+  local running = backendState == "Running"
+  local needsLogin = not running and (backendState == "NeedsLogin" or authUrl ~= "")
   local ip = ""
   local hostname = ""
   local peers = {}
   peersById = {}
 
   if running and type(decoded.Self) == "table" then
-    hostname = if type(decoded.Self.HostName) == "string" then decoded.Self.HostName else ""
+    hostname = nodeName(decoded.Self.DNSName, decoded.Self.HostName)
     ip = tailscaleIp(decoded.Self.TailscaleIPs)
   end
 
@@ -131,8 +158,7 @@ local function parseStatusJson(stdout)
       if type(peer) == "table" then
         local entry = {
           id = peerId,
-          hostname = if type(peer.HostName) == "string" then peer.HostName else "",
-          dnsName = if type(peer.DNSName) == "string" then peer.DNSName else "",
+          hostname = nodeName(peer.DNSName, peer.HostName),
           ip = tailscaleIp(peer.TailscaleIPs),
           online = peer.Online == true,
           os = if type(peer.OS) == "string" then peer.OS else "",
@@ -154,6 +180,7 @@ local function parseStatusJson(stdout)
 
   return {
     running = running,
+    needsLogin = needsLogin,
     ip = ip,
     hostname = hostname,
     peerCount = #peers,
@@ -259,9 +286,6 @@ local function executePeerAction(action, peerId)
   elseif action == "copy-hostname" then
     local name = peer.hostname
     if name == "" then
-      name = peer.dnsName
-    end
-    if name == "" then
       name = noctalia.tr("panel.unknown_host")
     end
     copyText(name, "notify.copied-hostname", { hostname = name })
@@ -273,8 +297,20 @@ local function executePeerAction(action, peerId)
   end
 end
 
+-- `up`/`down` are prefs writes: without --operator they exit non-zero with an
+-- access-denied message. Forward the fix instead of the generic failure.
+local function toggleErrorKey(stderr)
+  local lower = string.lower(if type(stderr) == "string" then stderr else "")
+  if string.find(lower, "access denied", 1, true) or string.find(lower, "requires root", 1, true) then
+    return "errors.needs-operator"
+  end
+  return "errors.toggle-failed"
+end
+
+-- Inert while unauthenticated: signing in is out of scope, so there is nothing to
+-- toggle until the user runs `tailscale up` in a terminal.
 local function toggleTailscale()
-  if toggleInFlight or not status.installed then
+  if toggleInFlight or not status.installed or status.needsLogin then
     return
   end
   toggleInFlight = true
@@ -285,7 +321,7 @@ local function toggleTailscale()
     if ok then
       noctalia.notify(noctalia.tr("title"), noctalia.tr(`notify.{if direction == "down" then "disconnected" else "connected"}`))
     elseif type(result) == "table" and not result.timedOut then
-      noctalia.notifyError(noctalia.tr("title"), noctalia.tr("errors.toggle-failed"))
+      noctalia.notifyError(noctalia.tr("title"), noctalia.tr(toggleErrorKey(result.stderr)))
     end
     pollStatus()
   end, 30000)
@@ -330,7 +366,7 @@ function onConfigChanged()
   noctalia.setUpdateInterval(refreshIntervalSec() * 1000)
   resolvedCommand = nil
   probeRetryTicks = 0
-  setStatus({ probing = true, installed = false, error = "" })
+  setStatus({ probing = true, installed = false, needsLogin = false, error = "" })
   probeCommand(1)
 end
 

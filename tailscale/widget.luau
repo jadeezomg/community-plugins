@@ -4,6 +4,7 @@
 local installed = false
 local probing = true
 local running = false
+local needsLogin = false
 local ip = ""
 local hostname = ""
 local peerCount = 0
@@ -85,6 +86,10 @@ local function setTooltip()
     barWidget.setTooltip(noctalia.tr("tooltip.not_installed"))
     return
   end
+  if needsLogin then
+    barWidget.setTooltip(noctalia.tr("tooltip.needs_login"))
+    return
+  end
   if running then
     local lines = {}
     if hostname ~= "" and peerCount > 0 then
@@ -149,6 +154,7 @@ local function applyStatus(value)
   installed = value.installed == true
   probing = value.probing == true
   running = value.running == true
+  needsLogin = value.needsLogin == true
   ip = if type(value.ip) == "string" then value.ip else ""
   hostname = if type(value.hostname) == "string" then value.hostname else ""
   peerCount = if type(value.peerCount) == "number" then value.peerCount else 0
@@ -165,7 +171,7 @@ function onClick()
 end
 
 function onRightClick()
-  if not installed then
+  if not installed or needsLogin then
     return
   end
   noctalia.state.set("command", { action = "toggle", nonce = noctalia.nowMs() })

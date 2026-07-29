@@ -5,6 +5,7 @@
 local installed = false
 local probing = true
 local running = false
+local needsLogin = false
 local ip = ""
 local hostname = ""
 local peerCount = 0
@@ -64,9 +65,6 @@ local function peerDisplayName(peer)
   if type(peer.hostname) == "string" and peer.hostname ~= "" then
     return peer.hostname
   end
-  if type(peer.dnsName) == "string" and peer.dnsName ~= "" then
-    return peer.dnsName:gsub("%.$", "")
-  end
   return noctalia.tr("panel.unknown_host")
 end
 
@@ -88,6 +86,9 @@ local function sortedPeers()
 end
 
 local function subtitleText()
+  if needsLogin then
+    return noctalia.tr("panel.status_needs_login")
+  end
   if not running then
     return noctalia.tr("panel.status_disconnected")
   end
@@ -214,6 +215,14 @@ local function peerRow(peer, index)
 end
 
 local function peerListRows()
+  if needsLogin then
+    return {
+      ui.label({
+        text = noctalia.tr("panel.needs_login"),
+        color = "on_surface_variant",
+      }),
+    }
+  end
   if not running then
     return {
       ui.label({
@@ -264,7 +273,11 @@ local function render()
     ui.row({ align = "center", justify = "space_between", gap = 8 }, {
       ui.column({ gap = 2, flexGrow = 1 }, {
         ui.label({ text = noctalia.tr("panel.title"), fontSize = 16, fontWeight = "bold", color = "on_surface" }),
-        ui.label({ text = subtitleText(), fontSize = 12, color = "on_surface_variant" }),
+        ui.label({
+          text = subtitleText(),
+          fontSize = 12,
+          color = if needsLogin then "error" else "on_surface_variant",
+        }),
       }),
       ui.button({ glyph = "x", variant = "ghost", onClick = "onClosePanel" }),
     }),
@@ -287,10 +300,13 @@ local function render()
     variant = "secondary",
     onClick = "onAdminConsole",
   }))
+  -- Inert while unauthenticated: `tailscale up` needs a prefs write, so signing in
+  -- happens in a terminal. peerListRows() says so in place of the peer list.
   table.insert(body, ui.button({
     text = if running then noctalia.tr("panel.disconnect") else noctalia.tr("panel.connect"),
     glyph = if running then "link-off" else "link",
     variant = if running then "destructive" else "primary",
+    enabled = not needsLogin,
     onClick = "onToggle",
   }))
 
@@ -320,6 +336,7 @@ local function applyStatus(value)
   installed = value.installed == true
   probing = value.probing == true
   running = value.running == true
+  needsLogin = value.needsLogin == true
   ip = if type(value.ip) == "string" then value.ip else ""
   hostname = if type(value.hostname) == "string" then value.hostname else ""
   peerCount = if type(value.peerCount) == "number" then value.peerCount else 0

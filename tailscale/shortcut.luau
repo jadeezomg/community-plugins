@@ -4,6 +4,7 @@
 local installed = false
 local probing = true
 local running = false
+local needsLogin = false
 
 local function render()
   local label = noctalia.tr("shortcut.disconnected")
@@ -11,6 +12,8 @@ local function render()
     label = noctalia.tr("shortcut.probing")
   elseif not installed then
     label = noctalia.tr("shortcut.not_installed")
+  elseif needsLogin then
+    label = noctalia.tr("shortcut.needs_login")
   elseif running then
     label = noctalia.tr("shortcut.connected")
   end
@@ -18,7 +21,7 @@ local function render()
   shortcut.setLabel(label)
   shortcut.setIcon("network", "network-off")
   shortcut.setActive(running and installed and not probing)
-  shortcut.setEnabled(installed and not probing)
+  shortcut.setEnabled(installed and not probing and not needsLogin)
 end
 
 local function applyStatus(value)
@@ -28,11 +31,12 @@ local function applyStatus(value)
   installed = value.installed == true
   probing = value.probing == true
   running = value.running == true
+  needsLogin = value.needsLogin == true
   render()
 end
 
 function onClick()
-  if not installed or probing then
+  if not installed or probing or needsLogin then
     return
   end
   noctalia.state.set("command", { action = "toggle", nonce = noctalia.nowMs() })
