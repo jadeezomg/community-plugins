@@ -91,8 +91,8 @@
 	"shortcut": {
 		"connected": "TS up",
 		"disconnected": "TS down",
-		"needs_login": "TS no auth",
-		"not_installed": "TS unavailable",
+		"needs_login": "no TS auth",
+		"not_installed": "no TS",
 		"probing": "Detecting Tailscale…"
 	},
 	"tooltip": {
